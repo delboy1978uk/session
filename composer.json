@@ -1,6 +1,7 @@
 {
   "name": "delboy1978uk/session",
   "description": "Secure Session Manager for PHP™",
+  "license": "MIT",
   "authors": [
     {
       "name": "Derek Stephen McLean",
@@ -8,6 +9,9 @@
     }
   ],
   "require": {},
+  "require-dev": {
+    "codeception/codeception": "^1.8"
+  },
   "autoload": {
     "psr-4": {
       "Del\\": "src/"

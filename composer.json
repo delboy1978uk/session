@@ -1,0 +1,16 @@
+{
+  "name": "delboy1978uk/session",
+  "description": "Secure Session Manager for PHP™",
+  "authors": [
+    {
+      "name": "Derek Stephen McLean",
+      "email": "delboy1978uk@gmail.com"
+    }
+  ],
+  "require": {},
+  "autoload": {
+    "psr-4": {
+      "Del\\": "src/"
+    }
+  }
+}

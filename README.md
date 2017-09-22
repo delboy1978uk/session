@@ -9,7 +9,7 @@ composer require delboy1978uk/session
 ```php
 use Del\SessionManager;
 
-// Starting the seeion - also takes a name argument
+// Starting the session - also takes a name argument
 SessionManager::sessionStart();
 
 // Setting a variable

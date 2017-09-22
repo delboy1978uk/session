@@ -1,5 +1,5 @@
 # session
-A secure session manager for PHP
+A secure-ish session manager for PHP
 ## Installation
 Use composer:
 ```

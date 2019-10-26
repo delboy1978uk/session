@@ -16,7 +16,6 @@ install:
 
 before_script:
   - export PATH=$PATH:vendor/bin
-  - migrant migrate --no-interaction
 
 script:
   - php vendor/bin/codecept run unit --coverage-xml --env travis

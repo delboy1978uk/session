@@ -34,6 +34,8 @@ final class SessionManager
      */
     public static function sessionStart($name, $lifetime = 0, $path = '/', $domain = null, $secure = null)
     {
+        global $_SERVER;
+
         // Set the cookie name before we start.
         session_name($name . '_Session');
 
@@ -84,6 +86,8 @@ final class SessionManager
      */
     private static function preventHijacking()
     {
+        global $_SERVER;
+
         if (!isset($_SESSION['ipAddress']) || !isset($_SESSION['userAgent'])) {
             return false;
         }

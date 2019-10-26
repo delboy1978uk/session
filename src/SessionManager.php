@@ -2,9 +2,28 @@
 
 namespace Del;
 
-
 final class SessionManager
 {
+    /**
+     *  As this is a singleton, construction and clone are disabled
+     *  use SessionManager::getInstance() if you need the instance
+     */
+    private function __construct(){}
+
+    private function __clone(){}
+
+    /**
+     * @return SessionManager|null
+     */
+    public static function getInstance()
+    {
+        static $inst = null;
+        if ($inst === null) {
+            $inst = new SessionManager();
+        }
+        return $inst;
+    }
+    
     /**
      * Creates a secure session
      * @param $name

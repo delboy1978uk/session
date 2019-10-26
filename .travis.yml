@@ -12,12 +12,10 @@ addons:
 sudo: false
 
 install:
-  - composer instal
+  - composer install
 
 before_script:
   - export PATH=$PATH:vendor/bin
-  - sleep 5
-  - java -jar selenium-server-standalone-2.42.2.jar -port 4444 &
   - migrant migrate --no-interaction
 
 script:

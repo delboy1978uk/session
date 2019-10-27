@@ -34,22 +34,16 @@ final class SessionManager
      */
     public static function sessionStart($name, $lifetime = 0, $path = '/', $domain = null, $secure = null)
     {
-        global $_SERVER;
-
-        // Set the cookie name before we start.
-        session_name($name . '_Session');
-
         // Set the domain to default to the current domain.
         $domain = isset($domain) ? $domain : $_SERVER['SERVER_NAME'];
 
         // Set the default secure value to whether the site is being accessed with SSL
         $secure = isset($secure) ? $secure : isset($_SERVER['HTTPS']);
 
-        // Set the cookie settings and start the session
-        session_set_cookie_params($lifetime, $path, $domain, $secure, true);
-
         $id = session_id();
         if(empty($id)) {
+            session_name($name . '_Session');
+            session_set_cookie_params($lifetime, $path, $domain, $secure, true);
             session_start();
         }
 
@@ -86,8 +80,6 @@ final class SessionManager
      */
     private static function preventHijacking()
     {
-        global $_SERVER;
-
         if (!isset($_SESSION['ipAddress']) || !isset($_SESSION['userAgent'])) {
             return false;
         }

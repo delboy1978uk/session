@@ -4,6 +4,8 @@ namespace Del;
 
 final class SessionManager
 {
+    const IP_REGEX = '/(\d{1,3}\.\d{1,3}\.\d{1,3}\.)(\d{1,3})/';
+
     /**
      *  As this is a singleton, construction and clone are disabled
      *  use SessionManager::getInstance() if you need the instance
@@ -60,8 +62,8 @@ final class SessionManager
             if (!$inst->preventHijacking()) {
 
                 // Reset session data and regenerate id
-                $_SESSION = array();
-                $_SESSION['ipAddress'] = $_SERVER['REMOTE_ADDR'];
+                $_SESSION = [];
+                $_SESSION['ipAddress'] = $inst->getIpAddress();
                 $_SESSION['userAgent'] = $_SERVER['HTTP_USER_AGENT'];
                 $inst->regenerateSession();
 
@@ -89,17 +91,32 @@ final class SessionManager
      */
     private function preventHijacking(): bool
     {
+        $ipAddress = $this->getIpAddress();
+
         if (!isset($_SESSION['ipAddress']) || !isset($_SESSION['userAgent'])) {
             return false;
         }
-        if ($_SESSION['ipAddress'] != $_SERVER['REMOTE_ADDR']) {
+
+        if ($_SESSION['ipAddress'] != $ipAddress) {
             return false;
         }
+
         if ($_SESSION['userAgent'] != $_SERVER['HTTP_USER_AGENT']) {
             return false;
         }
 
         return true;
+    }
+
+    /**
+     * If a site goes through the likes of Cloudflare, the last part of the IP might change
+     * So we replace it with an x.
+     *
+     * @return string
+     */
+    private function getIpAddress(): string
+    {
+        return preg_replace(SessionManager::IP_REGEX, '$1x', $_SERVER['REMOTE_ADDR']);
     }
 
     /**

@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Del;
 
@@ -13,27 +13,33 @@ final class SessionManager
     private function __clone(){}
 
     /**
-     * @return SessionManager|null
+     * @return SessionManager
      */
-    public static function getInstance()
+    public static function getInstance(): SessionManager
     {
         static $inst = null;
+
         if ($inst === null) {
             $inst = new SessionManager();
         }
+
         return $inst;
     }
-    
+
     /**
      * Creates a secure session
-     * @param $name
+     *
+     * @param string $name
      * @param int $lifetime
      * @param string $path
-     * @param null $domain
-     * @param null $secure
+     * @param string $domain
+     * @param bool|null $secure
      */
-    public static function sessionStart($name, $lifetime = 0, $path = '/', $domain = null, $secure = null)
+    public static function sessionStart(string $name, int $lifetime = 0, string $path = '/', string $domain = '', ?bool $secure = null): void
     {
+        // get the instance of the session manager
+        $inst = self::getInstance();
+
         // Set the domain to default to the current domain.
         $domain = isset($domain) ? $domain : $_SERVER['SERVER_NAME'];
 
@@ -48,27 +54,30 @@ final class SessionManager
         }
 
         // Make sure the session hasn't expired, and destroy it if it has
-        if (self::validateSession()) {
+        if ($inst->validateSession()) {
 
             // Check to see if the session is new or a hijacking attempt
-            if (!self::preventHijacking()) {
+            if (!$inst->preventHijacking()) {
 
                 // Reset session data and regenerate id
                 $_SESSION = array();
                 $_SESSION['ipAddress'] = $_SERVER['REMOTE_ADDR'];
                 $_SESSION['userAgent'] = $_SERVER['HTTP_USER_AGENT'];
-                self::regenerateSession();
+                $inst->regenerateSession();
 
                 // Give a 5% chance of the session id changing on any request
-            } elseif (self::shouldRandomlyRegenerate()) {
-                self::regenerateSession();
+            } elseif ($inst->shouldRandomlyRegenerate()) {
+                $inst->regenerateSession();
             }
         } else {
-            self::destroySession();
+            $inst->destroySession();
         }
     }
 
-    private function shouldRandomlyRegenerate()
+    /**
+     * @return bool
+     */
+    private function shouldRandomlyRegenerate(): bool
     {
         return rand(1, 100) <= 5;
     }
@@ -78,7 +87,7 @@ final class SessionManager
      * Checks session IP and user agent are still the same
      * @return bool
      */
-    private static function preventHijacking()
+    private function preventHijacking(): bool
     {
         if (!isset($_SESSION['ipAddress']) || !isset($_SESSION['userAgent'])) {
             return false;
@@ -89,6 +98,7 @@ final class SessionManager
         if ($_SESSION['userAgent'] != $_SERVER['HTTP_USER_AGENT']) {
             return false;
         }
+
         return true;
     }
 
@@ -98,7 +108,7 @@ final class SessionManager
      *  10 seconds is a good default which allows ajax calls to work
      *  without losing the session
      */
-    private static function  regenerateSession()
+    private function regenerateSession()
     {
         // If this session is obsolete it means there already is a new id
         if (isset($_SESSION['OBSOLETE']) && $_SESSION['OBSOLETE'] == true) {
@@ -129,7 +139,7 @@ final class SessionManager
      * Checks whether the session has expired or not
      * @return bool
      */
-    private static function validateSession()
+    private function validateSession()
     {
         if (isset($_SESSION['OBSOLETE']) && !isset($_SESSION['EXPIRES'])) {
             return false;
@@ -148,6 +158,7 @@ final class SessionManager
     public static function destroySession()
     {
         $id = session_id();
+
         if(!empty($id)) {
             $_SESSION = array();
             session_destroy();
@@ -156,10 +167,10 @@ final class SessionManager
     }
 
     /**
-     * @param $key
-     * @param $val
+     * @param string $key
+     * @param mixed $val
      */
-    public static function set($key, $val)
+    public static function set(string $key, $val):  void
     {
         $_SESSION[$key] = $val;
     }
@@ -168,7 +179,7 @@ final class SessionManager
      * @param $key
      * @return null
      */
-    public static function get($key)
+    public static function get(string $key)
     {
         return isset($_SESSION[$key]) ? $_SESSION[$key] : null;
     }
@@ -177,7 +188,7 @@ final class SessionManager
      * @param $key
      * @param $val
      */
-    public static function destroy($key)
+    public static function destroy(string $key): void
     {
         unset($_SESSION[$key]);
     }

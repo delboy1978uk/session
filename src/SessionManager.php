@@ -202,6 +202,15 @@ final class SessionManager
     }
 
     /**
+     * @param string $key
+     * @return bool
+     */
+    public static function has(string $key): bool
+    {
+        return isset($_SESSION[$key]);
+    }
+
+    /**
      * @param $key
      * @param $val
      */

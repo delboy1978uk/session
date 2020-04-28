@@ -2,7 +2,9 @@
 
 namespace Del;
 
-final class SessionManager
+use Psr\Container\ContainerInterface;
+
+final class SessionManager implements ContainerInterface
 {
     const IP_REGEX = '/(\d{1,3}\.\d{1,3}\.\d{1,3}\.)(\d{1,3})/';
 
@@ -64,7 +66,7 @@ final class SessionManager
                 // Reset session data and regenerate id
                 $_SESSION = [];
                 $_SESSION['ipAddress'] = $inst->getIpAddress();
-                $_SESSION['userAgent'] = $_SERVER['HTTP_USER_AGENT'];
+                $_SESSION['userAgent'] = $_SERVER['HTTP_USER_AGENT'] ?? '';
                 $inst->regenerateSession();
 
                 // Give a 5% chance of the session id changing on any request
@@ -92,6 +94,7 @@ final class SessionManager
     private function preventHijacking(): bool
     {
         $ipAddress = $this->getIpAddress();
+        $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? '';
 
         if (!isset($_SESSION['ipAddress']) || !isset($_SESSION['userAgent'])) {
             return false;
@@ -101,7 +104,7 @@ final class SessionManager
             return false;
         }
 
-        if ($_SESSION['userAgent'] != $_SERVER['HTTP_USER_AGENT']) {
+        if ($_SESSION['userAgent'] !== $userAgent) {
             return false;
         }
 
@@ -116,7 +119,9 @@ final class SessionManager
      */
     private function getIpAddress(): string
     {
-        return preg_replace(SessionManager::IP_REGEX, '$1x', $_SERVER['REMOTE_ADDR']);
+        $remoteAddress = $_SERVER['REMOTE_ADDR'] ?? '';
+
+        return preg_replace(SessionManager::IP_REGEX, '$1x', $remoteAddress);
     }
 
     /**

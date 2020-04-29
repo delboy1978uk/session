@@ -2,9 +2,7 @@
 
 namespace Del;
 
-use Psr\Container\ContainerInterface;
-
-final class SessionManager implements ContainerInterface
+final class SessionManager
 {
     const IP_REGEX = '/(\d{1,3}\.\d{1,3}\.\d{1,3}\.)(\d{1,3})/';
 
@@ -218,6 +216,16 @@ final class SessionManager implements ContainerInterface
     /**
      * @param $key
      * @param $val
+     */
+    public static function unset(string $key): void
+    {
+        unset($_SESSION[$key]);
+    }
+
+    /**
+     * @param $key
+     * @param $val
+     * @deprecated use unset
      */
     public static function destroy(string $key): void
     {

@@ -1,5 +1,5 @@
 # session
-A reasonably secure session manager for PHP implementing PSR-11
+A reasonably secure session manager for PHP
 ## Installation
 Use composer:
 ```

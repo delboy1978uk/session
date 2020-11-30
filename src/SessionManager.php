@@ -190,7 +190,7 @@ final class SessionManager
      * @param string $key
      * @param mixed $val
      */
-    public static function set(string $key, $val):  void
+    public function set(string $key, $val):  void
     {
         $_SESSION[$key] = $val;
     }
@@ -199,7 +199,7 @@ final class SessionManager
      * @param $key
      * @return null
      */
-    public static function get(string $key)
+    public function get(string $key)
     {
         return isset($_SESSION[$key]) ? $_SESSION[$key] : null;
     }
@@ -208,7 +208,7 @@ final class SessionManager
      * @param string $key
      * @return bool
      */
-    public static function has(string $key): bool
+    public function has(string $key): bool
     {
         return isset($_SESSION[$key]);
     }
@@ -217,7 +217,7 @@ final class SessionManager
      * @param $key
      * @param $val
      */
-    public static function unset(string $key): void
+    public function unset(string $key): void
     {
         unset($_SESSION[$key]);
     }
@@ -227,7 +227,7 @@ final class SessionManager
      * @param $val
      * @deprecated use unset
      */
-    public static function destroy(string $key): void
+    public function destroy(string $key): void
     {
         unset($_SESSION[$key]);
     }

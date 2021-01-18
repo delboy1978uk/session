@@ -197,7 +197,7 @@ final class SessionManager
 
     /**
      * @param $key
-     * @return null
+     * @return null|mixed
      */
     public function get(string $key)
     {

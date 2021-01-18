@@ -10,9 +10,13 @@ final class SessionManager
      *  As this is a singleton, construction and clone are disabled
      *  use SessionManager::getInstance() if you need the instance
      */
-    private function __construct(){}
+    private function __construct()
+    {
+    }
 
-    private function __clone(){}
+    private function __clone()
+    {
+    }
 
     /**
      * @return SessionManager
@@ -47,32 +51,36 @@ final class SessionManager
 
         // Set the default secure value to whether the site is being accessed with SSL
         $secure = isset($secure) ? $secure : isset($_SERVER['HTTPS']);
-
         $id = session_id();
-        if(empty($id)) {
+        
+        if (empty($id)) {
             session_name($name . '_Session');
             session_set_cookie_params($lifetime, $path, $domain, $secure, true);
             session_start();
         }
 
         // Make sure the session hasn't expired, and destroy it if it has
-        if ($inst->validateSession()) {
+        $inst->isValid() ? $inst->initialise() :  $inst->destroySession();
 
-            // Check to see if the session is new or a hijacking attempt
-            if (!$inst->preventHijacking()) {
+    }
 
-                // Reset session data and regenerate id
-                $_SESSION = [];
-                $_SESSION['ipAddress'] = $inst->getIpAddress();
-                $_SESSION['userAgent'] = $_SERVER['HTTP_USER_AGENT'] ?? '';
-                $inst->regenerateSession();
+    private function initialise(): void
+    {
+        // Check to see if the session is a hijacking attempt
+        if ($inst->isHijackAttempt()) {
 
-                // Give a 5% chance of the session id changing on any request
-            } elseif ($inst->shouldRandomlyRegenerate()) {
-                $inst->regenerateSession();
-            }
-        } else {
-            $inst->destroySession();
+            // Reset session data and regenerate id
+            $_SESSION = [];
+            $_SESSION['ipAddress'] = $inst->getIpAddress();
+            $_SESSION['userAgent'] = $_SERVER['HTTP_USER_AGENT'] ?? '';
+            $inst->regenerateSession();
+
+            return;
+        }
+
+        // Give a 5% chance of the session id changing on any request
+        if ($inst->shouldRandomlyRegenerate()) {
+            $inst->regenerateSession();
         }
     }
 
@@ -89,24 +97,24 @@ final class SessionManager
      * Checks session IP and user agent are still the same
      * @return bool
      */
-    private function preventHijacking(): bool
+    private function isHijackAttempt(): bool
     {
         $ipAddress = $this->getIpAddress();
         $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? '';
 
         if (!isset($_SESSION['ipAddress']) || !isset($_SESSION['userAgent'])) {
-            return false;
+            return true;
         }
 
         if ($_SESSION['ipAddress'] != $ipAddress) {
-            return false;
+            return true;
         }
 
         if ($_SESSION['userAgent'] !== $userAgent) {
-            return false;
+            return true;
         }
 
-        return true;
+        return false;
     }
 
     /**
@@ -119,7 +127,7 @@ final class SessionManager
     {
         $remoteAddress = $_SERVER['REMOTE_ADDR'] ?? '';
 
-        return preg_replace(SessionManager::IP_REGEX, '$1x', $remoteAddress);
+        return preg_replace(self::IP_REGEX, '$1x', $remoteAddress);
     }
 
     /**
@@ -159,7 +167,7 @@ final class SessionManager
      * Checks whether the session has expired or not
      * @return bool
      */
-    private function validateSession()
+    private function isValid(): bool
     {
         if (isset($_SESSION['OBSOLETE']) && !isset($_SESSION['EXPIRES'])) {
             return false;
@@ -179,8 +187,8 @@ final class SessionManager
     {
         $id = session_id();
 
-        if(!empty($id)) {
-            $_SESSION = array();
+        if (!empty($id)) {
+            $_SESSION = [];
             session_destroy();
             session_start();
         }
@@ -190,7 +198,7 @@ final class SessionManager
      * @param string $key
      * @param mixed $val
      */
-    public function set(string $key, $val):  void
+    public function set(string $key, $val): void
     {
         $_SESSION[$key] = $val;
     }

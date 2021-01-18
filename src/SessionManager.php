@@ -52,7 +52,7 @@ final class SessionManager
         // Set the default secure value to whether the site is being accessed with SSL
         $secure = isset($secure) ? $secure : isset($_SERVER['HTTPS']);
         $id = session_id();
-        
+
         if (empty($id)) {
             session_name($name . '_Session');
             session_set_cookie_params($lifetime, $path, $domain, $secure, true);
@@ -67,20 +67,20 @@ final class SessionManager
     private function initialise(): void
     {
         // Check to see if the session is a hijacking attempt
-        if ($inst->isHijackAttempt()) {
+        if ($this->isHijackAttempt()) {
 
             // Reset session data and regenerate id
             $_SESSION = [];
-            $_SESSION['ipAddress'] = $inst->getIpAddress();
+            $_SESSION['ipAddress'] = $this->getIpAddress();
             $_SESSION['userAgent'] = $_SERVER['HTTP_USER_AGENT'] ?? '';
-            $inst->regenerateSession();
+            $this->regenerateSession();
 
             return;
         }
 
         // Give a 5% chance of the session id changing on any request
-        if ($inst->shouldRandomlyRegenerate()) {
-            $inst->regenerateSession();
+        if ($this->shouldRandomlyRegenerate()) {
+            $this->regenerateSession();
         }
     }
 

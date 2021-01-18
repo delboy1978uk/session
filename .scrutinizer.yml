@@ -1,9 +1,9 @@
 tools:
-    external_code_coverage: true
+  external_code_coverage: true
 checks:
-    php:
-        code_rating: true
-        duplication: true
+  php:
+    code_rating: true
+    duplication: true
 filter:
-    paths:
-        - src/*
+  paths:
+    - src/*

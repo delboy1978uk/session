@@ -18,6 +18,9 @@ SessionManager::sessionStart();
 // Setting a variable
 SessionManager::set('name', 'DelBoy');
 
+// Check a session variable exists
+$hasName = SessionManger::has('name');
+
 // Getting a variable
 $name = SessionManger::get('name');
 

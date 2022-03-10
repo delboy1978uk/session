@@ -1,14 +1,13 @@
-bootstrap: _bootstrap.php
+actor: Tester
 paths:
     tests: tests
-    log: tests/_log
+    log: tests/_output
     data: tests/_data
-    helpers: tests/_helpers
+    helpers: tests/_support
+bootstrap: _bootstrap.php
 settings:
-    suite_class: \PHPUnit_Framework_TestSuite
-    colors: false
+    colors: true
     memory_limit: 1024M
-    log: true
 modules:
     config:
         Db:
@@ -16,3 +15,7 @@ modules:
             user: ''
             password: ''
             dump: tests/_data/dump.sql
+coverage:
+    enabled: true
+    include:
+        - src/*

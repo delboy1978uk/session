@@ -16,11 +16,11 @@
  *
  * @SuppressWarnings(PHPMD)
 */
-class CodeGuy extends \Codeception\Actor
+class AcceptanceTester extends \Codeception\Actor
 {
-    use _generated\CodeGuyActions;
+    use _generated\AcceptanceTesterActions;
 
-   /**
-    * Define custom actions here
-    */
+    /**
+     * Define custom actions here
+     */
 }

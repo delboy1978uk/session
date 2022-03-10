@@ -1,20 +1,13 @@
-actor: Tester
 paths:
     tests: tests
-    log: tests/_output
+    output: tests/_output
     data: tests/_data
-    helpers: tests/_support
-bootstrap: _bootstrap.php
-settings:
-    colors: true
-    memory_limit: 1024M
-modules:
-    config:
-        Db:
-            dsn: ''
-            user: ''
-            password: ''
-            dump: tests/_data/dump.sql
+    support: tests/_support
+    envs: tests/_envs
+actor_suffix: Tester
+extensions:
+    enabled:
+        - Codeception\Extension\RunFailed
 coverage:
     enabled: true
     include:

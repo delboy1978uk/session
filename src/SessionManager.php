@@ -5,16 +5,13 @@ namespace Del;
 final class SessionManager
 {
     private const IP_REGEX = '/(\d{1,3}\.\d{1,3}\.\d{1,3}\.)(\d{1,3})/';
-    private array $session;
+    private array $session = [];
 
     /**
      *  As this is a singleton, construction and clone are disabled
      *  use SessionManager::getInstance() if you need the instance
      */
-    private function __construct()
-    {
-        $this->session = & $_SESSION;
-    }
+    private function __construct(){}
 
     private function __clone(){}
 
@@ -48,11 +45,11 @@ final class SessionManager
             \session_name($name . '_Session');
             \session_set_cookie_params($lifetime, $path, $domain, $secure, true);
             \session_start();
+            $inst->session = & $_SESSION;
         }
 
         // Make sure the session hasn't expired, and destroy it if it has
         $inst->isValid() ? $inst->initialise() :  self::destroySession();
-
     }
 
     private function initialise(): void
@@ -142,6 +139,7 @@ final class SessionManager
         // Set session ID to the new one, and start it back up again
         \session_id($newSession);
         \session_start();
+        $this->session = & $_SESSION;
 
         // Now we unset the obsolete and expiration values for the session we want to keep
         unset($this->session['OBSOLETE']);

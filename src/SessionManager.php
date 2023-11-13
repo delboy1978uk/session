@@ -179,7 +179,7 @@ final class SessionManager
 
     private function hasSessionRotation(): bool
     {
-        return getenv('SESSION_NO_ROTATION') ?: true;
+        return getenv('SESSION_ROTATION') ?: true;
     }
 
     /**

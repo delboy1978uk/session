@@ -2,6 +2,18 @@
 
 namespace Del;
 
+use function getenv;
+use function preg_replace;
+use function random_int;
+use function session_destroy;
+use function session_id;
+use function session_name;
+use function session_regenerate_id;
+use function session_set_cookie_params;
+use function session_start;
+use function session_write_close;
+use function time;
+
 final class SessionManager
 {
     private const IP_REGEX = '/(\d{1,3}\.\d{1,3}\.\d{1,3}\.)(\d{1,3})/';
@@ -35,16 +47,16 @@ final class SessionManager
         $inst = self::getInstance();
 
         // Set the domain to default to the current domain.
-        $domain = isset($domain) ? $domain : $_SERVER['SERVER_NAME'];
+        $domain = $domain ?? $_SERVER['SERVER_NAME'];
 
         // Set the default secure value to whether the site is being accessed with SSL
-        $secure = isset($secure) ? $secure : isset($_SERVER['HTTPS']);
-        $id = \session_id();
+        $secure = $secure ?? isset($_SERVER['HTTPS']);
+        $id = session_id();
 
         if (empty($id)) {
-            \session_name($name . '_Session');
-            \session_set_cookie_params($lifetime, $path, $domain, $secure, true);
-            \session_start();
+            session_name($name . '_Session');
+            session_set_cookie_params($lifetime, $path, $domain, $secure, true);
+            session_start();
             $inst->session = & $_SESSION;
         }
 
@@ -74,9 +86,8 @@ final class SessionManager
 
     private function shouldRandomlyRegenerate(): bool
     {
-        return \random_int(1, 100) <= 5;
+        return $this->hasSessionRotation() && random_int(1, 100) <= 5;
     }
-
 
     /**
      * Checks session IP and user agent are still the same
@@ -86,11 +97,11 @@ final class SessionManager
         $ipAddress = $this->getIpAddress();
         $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? '';
 
-        if (!isset($this->session['ipAddress']) || !isset($this->session['userAgent'])) {
+        if (!isset($this->session['ipAddress'], $this->session['userAgent'])) {
             return true;
         }
 
-        if ($this->session['ipAddress'] != $ipAddress) {
+        if ($this->session['ipAddress'] !== $ipAddress) {
             return true;
         }
 
@@ -109,41 +120,40 @@ final class SessionManager
     {
         $remoteAddress = $_SERVER['REMOTE_ADDR'] ?? '';
 
-        return \preg_replace(self::IP_REGEX, '$1x', $remoteAddress);
+        return preg_replace(self::IP_REGEX, '$1x', $remoteAddress);
     }
 
     /**
-     *  Creates a fresh session Id to make it harder to hack
+     *  Creates a fresh session ID to make it harder to hack
      *  If the site is very slow in parts increase the expiry time
      *  10 seconds is a good default which allows ajax calls to work
      *  without losing the session
      */
-    private function regenerateSession()
+    private function regenerateSession(): void
     {
         // If this session is obsolete it means there already is a new id
-        if (isset($this->session['OBSOLETE']) && $this->session['OBSOLETE'] == true) {
+        if (isset($this->session['OBSOLETE']) && $this->session['OBSOLETE'] === true) {
             return;
         }
 
         // Set current session to expire in 10 seconds
         $this->session['OBSOLETE'] = true;
-        $this->session['EXPIRES'] = \time() + 10;
+        $this->session['EXPIRES'] = time() + 10;
 
         // Create new session without destroying the old one
-        \session_regenerate_id(false);
+        session_regenerate_id();
 
         // Grab current session ID and close both sessions to allow other scripts to use them
         $newSession = \session_id();
         \session_write_close();
 
         // Set session ID to the new one, and start it back up again
-        \session_id($newSession);
-        \session_start();
+        session_id($newSession);
+        session_start();
         $this->session = & $_SESSION;
 
         // Now we unset the obsolete and expiration values for the session we want to keep
-        unset($this->session['OBSOLETE']);
-        unset($this->session['EXPIRES']);
+        unset($this->session['OBSOLETE'], $this->session['EXPIRES']);
     }
 
     /**
@@ -152,6 +162,10 @@ final class SessionManager
      */
     private function isValid(): bool
     {
+        if (!$this->hasSessionRotation()) {
+            return true;
+        }
+
         if (isset($this->session['OBSOLETE']) && !isset($this->session['EXPIRES'])) {
             return false;
         }
@@ -163,62 +177,50 @@ final class SessionManager
         return true;
     }
 
+    private function hasSessionRotation(): bool
+    {
+        return getenv('SESSION_NO_ROTATION') ?: true;
+    }
+
     /**
      *  Resets the session
      */
-    public static function destroySession()
+    public static function destroySession(): void
     {
         $id = session_id();
 
         if (!empty($id)) {
             $_SESSION = [];
-            \session_destroy();
-            \session_start();
+            session_destroy();
+            session_start();
         }
     }
 
-    /**
-     * @param string $key
-     * @param mixed $val
-     */
-    public function set(string $key, $val): void
+    public function set(string $key, mixed $val): void
     {
         $this->session[$key] = $val;
     }
 
-    /**
-     * @param $key
-     * @return null|mixed
-     */
-    public function get(string $key)
+    public function get(string $key): mixed
     {
-        return isset($this->session[$key]) ? $this->session[$key] : null;
+        return $this->session[$key] ?? null;
     }
 
-    /**
-     * @param string $key
-     * @return bool
-     */
     public function has(string $key): bool
     {
         return isset($this->session[$key]);
     }
 
-    /**
-     * @deprecated  use destroy($key) instead
-     */
     public function unset(string $key): void
     {
         unset($this->session[$key]);
     }
 
     /**
-     * @param $key
-     * @param $val
      * @deprecated use unset
      */
     public function destroy(string $key): void
     {
-        unset($this->session[$key]);
+        $this->unset($key);
     }
 }

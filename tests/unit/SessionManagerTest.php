@@ -1,4 +1,5 @@
 <?php
+
 namespace DelTesting;
 
 use Codeception\TestCase\Test;
@@ -6,6 +7,8 @@ use Del\SessionManager;
 
 class SessionManagerTest extends Test
 {
+    private SessionManager $sessionManager;
+
     public function _before()
     {
         $_SERVER = array();
@@ -16,6 +19,8 @@ class SessionManagerTest extends Test
         if(session_id()) {
           session_destroy();
         }
+
+        $this->sessionManager = SessionManager::getInstance();
     }
 
     public function _after()
@@ -26,76 +31,76 @@ class SessionManagerTest extends Test
     public function testGetAndSetVariable()
     {
         SessionManager::sessionStart('testGetAndSet');
-        SessionManager::set('test',1234);
-        $this->assertEquals(1234, SessionManager::get('test'));
+        $this->sessionManager->set('test',1234);
+        $this->assertEquals(1234, $this->sessionManager->get('test'));
     }
 
     public function testPreventHijacking()
     {
         SessionManager::sessionStart('testGetAndSet');
-        SessionManager::set('test',1234);
+        $this->sessionManager->set('test',1234);
         $_SERVER['REMOTE_ADDR'] = '4.3.2.1';
-        $this->assertEquals(1234, SessionManager::get('test'));
+        $this->assertEquals(1234, $this->sessionManager->get('test'));
     }
 
     public function testValidateSessionWhenObsoleteKillsSession()
     {
         SessionManager::sessionStart('testObsoleteSession');
-        SessionManager::set('testObsolete',1234);
-        SessionManager::set('OBSOLETE', true);
+        $this->sessionManager->set('testObsolete',1234);
+        $this->sessionManager->set('OBSOLETE', true);
         SessionManager::sessionStart('testObsoleteSession');
-        $this->assertNull(SessionManager::get('testObsolete'));
+        $this->assertNull($this->sessionManager->get('testObsolete'));
     }
 
     public function testValidateSessionWhenExpiredKillsSession()
     {
         SessionManager::sessionStart('testExpiredSession');
-        SessionManager::set('testExpired',1234);
-        SessionManager::set('EXPIRES', time() - 10);
+        $this->sessionManager->set('testExpired',1234);
+        $this->sessionManager->set('EXPIRES', time() - 10);
         SessionManager::sessionStart('testExpired');
-        $this->assertNull(SessionManager::get('testUserAgent'));
+        $this->assertNull($this->sessionManager->get('testUserAgent'));
     }
 
     public function testPreventHijackingWithDifferentIp()
     {
         SessionManager::sessionStart('testIp');
-        SessionManager::set('ipAddress', '6.5.4.3');
+        $this->sessionManager->set('ipAddress', '6.5.4.3');
         SessionManager::sessionStart('testIp');
         $_SERVER['REMOTE_ADDR'] = '10.20.30.40';
         SessionManager::sessionStart('testIp');
-        $this->assertNull(SessionManager::get('testIp'));
+        $this->assertNull($this->sessionManager->get('testIp'));
     }
 
     public function testPreventHijackingWithDifferentUserAgent()
     {
         SessionManager::sessionStart('testUserAgent');
-        SessionManager::set('UserAgent', 'GoogleBot');
+        $this->sessionManager->set('UserAgent', 'GoogleBot');
         SessionManager::sessionStart('testUserAgent');
         $_SERVER['HTTP_USER_AGENT'] = 'A completely different user agent string';
         SessionManager::sessionStart('testUserAgent');
-        $this->assertNull(SessionManager::get('testUserAgent'));
+        $this->assertNull($this->sessionManager->get('testUserAgent'));
     }
 
     public function testValidateSession()
     {
         SessionManager::sessionStart('testValidateSession');
-        SessionManager::set('variable', 'random');
+        $this->sessionManager->set('variable', 'random');
         SessionManager::sessionStart('testValidateSession');
         SessionManager::sessionStart('testValidateSession');
-        $this->assertEquals('random', SessionManager::get('variable'));
+        $this->assertEquals('random', $this->sessionManager->get('variable'));
     }
 
     public function testRegenerateSessionWhenObsolete()
     {
         SessionManager::sessionStart('testRegenerateWhenObsolete');
-        SessionManager::set('variable', 'random');
-        SessionManager::set('OBSOLETE', true);
-        SessionManager::set('EXPIRES', time() + 20);
+        $this->sessionManager->set('variable', 'random');
+        $this->sessionManager->set('OBSOLETE', true);
+        $this->sessionManager->set('EXPIRES', time() + 20);
         SessionManager::sessionStart('testRegenerateWhenObsolete');
         // deliberately mess with the expiry, so that it should destroy the session
-        SessionManager::destroy('EXPIRES');
+        $this->sessionManager->unset('EXPIRES');
         SessionManager::sessionStart('testRegenerateWhenObsolete');
-        $this->assertNull(SessionManager::get('variable'));
+        $this->assertNull($this->sessionManager->get('variable'));
     }
 
     public function testRandomRegenerateSession()
@@ -104,16 +109,16 @@ class SessionManagerTest extends Test
         // So we'll run it 40 times and hopefully the test will cover it!
         // (We can't use aspect mock, we need PHP 5.4 :-( )
         SessionManager::sessionStart('testRandomRegenerateSession');
-        SessionManager::set('variable', 'random');
-        SessionManager::set('OBSOLETE', true);
-        SessionManager::set('EXPIRES', true);
+        $this->sessionManager->set('variable', 'random');
+        $this->sessionManager->set('OBSOLETE', true);
+        $this->sessionManager->set('EXPIRES', true);
 
         for($x = 0; $x < 40; $x ++ ) {
             SessionManager::sessionStart('testRandomRegenerateSession');
-            SessionManager::set('OBSOLETE', true);
-            SessionManager::set('EXPIRES', true);
+            $this->sessionManager->set('OBSOLETE', true);
+            $this->sessionManager->set('EXPIRES', true);
         }
 
-        $this->assertEquals('random', SessionManager::get('variable'));
+        $this->assertEquals('random', $this->sessionManager->get('variable'));
     }
 }

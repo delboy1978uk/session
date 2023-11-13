@@ -144,8 +144,8 @@ final class SessionManager
         session_regenerate_id();
 
         // Grab current session ID and close both sessions to allow other scripts to use them
-        $newSession = session_id();
-        session_write_close();
+        $newSession = \session_id();
+        \session_write_close();
 
         // Set session ID to the new one, and start it back up again
         session_id($newSession);
@@ -196,10 +196,6 @@ final class SessionManager
         }
     }
 
-    /**
-     * @param string $key
-     * @param mixed $val
-     */
     public function set(string $key, mixed $val): void
     {
         $this->session[$key] = $val;
@@ -210,10 +206,6 @@ final class SessionManager
         return $this->session[$key] ?? null;
     }
 
-    /**
-     * @param string $key
-     * @return bool
-     */
     public function has(string $key): bool
     {
         return isset($this->session[$key]);

@@ -145,7 +145,7 @@ final class SessionManager
 
         // Grab current session ID and close both sessions to allow other scripts to use them
         $newSession = \session_id();
-        \session_write_close();
+        session_write_close();
 
         // Set session ID to the new one, and start it back up again
         session_id($newSession);
@@ -179,9 +179,9 @@ final class SessionManager
 
     private function hasSessionRotation(): bool
     {
-        $hasRotation = getenv('SESSION_ROTATION') ?? true;
+        $hasRotation = getenv('SESSION_ROTATION') ?: 'true';
 
-        return $hasRotation === 'false'  ? false : true;
+        return $hasRotation === 'true';
     }
 
     /**

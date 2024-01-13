@@ -103,17 +103,28 @@ class SessionManagerTest extends Test
         $this->assertNull($this->sessionManager->get('variable'));
     }
 
+    public function testRotateSessionEnvVar()
+    {
+        \putenv('SESSION_ROTATION=false');
+        SessionManager::sessionStart('testRotateSessionEnvVar');
+        $this->sessionManager->set('variable', 'random');
+        SessionManager::sessionStart('testRotateSessionEnvVar');
+        $this->assertTrue($this->sessionManager->has('variable'));
+        $this->assertEquals('random',  $this->sessionManager->get('variable'));
+        $this->sessionManager->destroy('variable');
+        $this->assertFalse($this->sessionManager->has('variable'));
+    }
+
     public function testRandomRegenerateSession()
     {
         // There's a 1 in 20 chance of it randomly regenerating an ID.
-        // So we'll run it 40 times and hopefully the test will cover it!
-        // (We can't use aspect mock, we need PHP 5.4 :-( )
+        // So we'll run it 10000 times and hopefully the test will cover it!
         SessionManager::sessionStart('testRandomRegenerateSession');
         $this->sessionManager->set('variable', 'random');
         $this->sessionManager->set('OBSOLETE', true);
         $this->sessionManager->set('EXPIRES', true);
 
-        for($x = 0; $x < 40; $x ++ ) {
+        for($x = 0; $x < 10000; $x ++ ) {
             SessionManager::sessionStart('testRandomRegenerateSession');
             $this->sessionManager->set('OBSOLETE', true);
             $this->sessionManager->set('EXPIRES', true);

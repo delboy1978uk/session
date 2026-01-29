@@ -2,9 +2,9 @@ name: main
 
 on:
   push:
-    branches: [ master ]
+    branches: [master]
   pull_request:
-    branches: [ master ]
+    branches: [master]
 
 jobs:
   test:
@@ -40,7 +40,7 @@ jobs:
         run: XDEBUG_MODE=coverage vendor/bin/codecept run unit --coverage-xml
 
       - name: Download Scrutinizer ocular.phar
-        run: composer require scrutinizer/ocular
+        run: composer global require uma/ocular --no-interaction --prefer-dist
 
       - name: Upload coverage
-        run: vendor/bin/ocular code-coverage:upload --format=php-clover tests/_output/coverage.xml
+        run: $HOME/.composer/vendor/bin/ocular code-coverage:upload --format=php-clover tests/_output/coverage.xml

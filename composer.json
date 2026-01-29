@@ -13,13 +13,17 @@
   },
   "require-dev": {
     "roave/security-advisories": "dev-latest",
-    "codeception/codeception": "^4.1",
-    "codeception/module-asserts": "^1.0.0"
+    "delboy1978uk/dev-tools": "^1.1"
   },
   "autoload": {
     "psr-4": {
       "Del\\": "src/",
       "DelTesting\\": "tests/unit/Del"
+    }
+  },
+  "config": {
+    "allow-plugins": {
+      "phpro/grumphp": false
     }
   }
 }

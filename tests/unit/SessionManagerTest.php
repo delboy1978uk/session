@@ -2,10 +2,10 @@
 
 namespace DelTesting;
 
-use Codeception\TestCase\Test;
+use Codeception\Test\Unit;
 use Del\SessionManager;
 
-class SessionManagerTest extends Test
+class SessionManagerTest extends Unit
 {
     private SessionManager $sessionManager;
 

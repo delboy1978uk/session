@@ -178,12 +178,15 @@ final class SessionManager
 
     private function hasSessionRotation(): bool
     {
-        return getenv('SESSION_ROTATION') ?: true;
+        $rotation = getenv('SESSION_ROTATION');
+        return $rotation ? (bool) $rotation : true;
     }
 
     private function hasIPCheck(): bool
     {
-        return getenv('SESSION_IP_CHECK') ?: true;
+        $ipCheck = getenv('SESSION_IP_CHECK');
+
+        return $ipCheck ? (bool) $ipCheck: true;
     }
 
     /**

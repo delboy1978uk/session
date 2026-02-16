@@ -94,22 +94,21 @@ final class SessionManager
      */
     private function isHijackAttempt(): bool
     {
-        $ipAddress = $this->getIpAddress();
         $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? '';
 
-        if (!isset($this->session['ipAddress'], $this->session['userAgent'])) {
-            return true;
+        if ($this->hasIPCheck()) {
+            $ipAddress = $this->getIpAddress();
+
+            if (!isset($this->session['ipAddress'], $this->session['userAgent'])) {
+                return true;
+            }
+
+            if ($this->session['ipAddress'] !== $ipAddress) {
+                return true;
+            }
         }
 
-        if ($this->session['ipAddress'] !== $ipAddress) {
-            return true;
-        }
-
-        if ($this->session['userAgent'] !== $userAgent) {
-            return true;
-        }
-
-        return false;
+        return $this->session['userAgent'] !== $userAgent;
     }
 
     /**
@@ -179,9 +178,12 @@ final class SessionManager
 
     private function hasSessionRotation(): bool
     {
-        $hasRotation = getenv('SESSION_ROTATION') ?: 'true';
+        return getenv('SESSION_ROTATION') ?: true;
+    }
 
-        return $hasRotation === 'true';
+    private function hasIPCheck(): bool
+    {
+        return getenv('SESSION_IP_CHECK') ?: true;
     }
 
     /**

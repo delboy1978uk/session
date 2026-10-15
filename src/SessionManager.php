@@ -3,6 +3,7 @@
 namespace Del;
 
 use function getenv;
+use function PHPUnit\Framework\isArray;
 use function preg_replace;
 use function random_int;
 use function session_destroy;
@@ -41,7 +42,7 @@ final class SessionManager
     /**
      * Creates a secure session
      */
-    public static function sessionStart(string $name, int $lifetime = 0, string $path = '/', string $domain = '', ?bool $secure = null): void
+    public static function sessionStart(string $name, int|array $lifetimeOrSettings = 0, string $path = '/', string $domain = '', ?bool $secure = null): void
     {
         // get the instance of the session manager
         $inst = self::getInstance();
@@ -55,7 +56,9 @@ final class SessionManager
 
         if (empty($id)) {
             session_name($name . '_Session');
-            session_set_cookie_params($lifetime, $path, $domain, $secure, true);
+            is_array($lifetimeOrSettings)
+                ? session_set_cookie_params($lifetimeOrSettings) 
+                : session_set_cookie_params($lifetimeOrSettings, $path, $domain, $secure, true);
             session_start();
             $inst->session = & $_SESSION;
         }

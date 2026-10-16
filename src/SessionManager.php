@@ -57,7 +57,7 @@ final class SessionManager
         if (empty($id)) {
             session_name($name . '_Session');
             is_array($lifetimeOrSettings)
-                ? session_set_cookie_params($lifetimeOrSettings) 
+                ? session_set_cookie_params($lifetimeOrSettings)
                 : session_set_cookie_params($lifetimeOrSettings, $path, $domain, $secure, true);
             session_start();
             $inst->session = & $_SESSION;
@@ -182,14 +182,19 @@ final class SessionManager
     private function hasSessionRotation(): bool
     {
         $rotation = getenv('SESSION_ROTATION');
-        return $rotation ? (bool) $rotation : true;
+
+        return $rotation === false
+            ? true
+            : filter_var($rotation, FILTER_VALIDATE_BOOL);
     }
 
     private function hasIPCheck(): bool
     {
         $ipCheck = getenv('SESSION_IP_CHECK');
 
-        return $ipCheck ? (bool) $ipCheck: true;
+        return $ipCheck === false
+            ? true
+            : filter_var($ipCheck, FILTER_VALIDATE_BOOL);
     }
 
     /**

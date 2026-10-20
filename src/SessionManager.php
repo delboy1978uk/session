@@ -3,7 +3,6 @@
 namespace Del;
 
 use function getenv;
-use function PHPUnit\Framework\isArray;
 use function preg_replace;
 use function random_int;
 use function session_destroy;

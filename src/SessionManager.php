@@ -60,8 +60,6 @@ final class SessionManager
                 : session_set_cookie_params($lifetimeOrSettings, $path, $domain, $secure, true);
             session_start();
             $inst->session = & $_SESSION;
-            $inst->session['ipAddress'] = $inst->getIpAddress();
-            $inst->session['userAgent'] = $_SERVER['HTTP_USER_AGENT'] ?? '';
         }
 
         // Make sure the session hasn't expired, and destroy it if it has
